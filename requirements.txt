@@ -1,0 +1,8 @@
+# Web
+flask
+flask-sqlalchemy
+flask-bcrypt
+flask-login
+flask-wtf
+flask-socketio
+eventlet
