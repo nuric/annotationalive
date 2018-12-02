@@ -1,29 +1,18 @@
 {% extends "main_base.html" %}
-{% block columns %}
-<!-- Middle Column -->
-<div class="w3-col l7">
-  <div class="w3-row-padding">
-    <form class="w3-card w3-white" method="POST">
-      <header class="w3-container w3-theme">
-        <h2>{{ form_header }}</h1>
-      </header>
-      <div class="w3-container w3-white">
-        {{ form.csrf_token }}
-        {% for field in form if field.type != "CSRFTokenField" %}
-        <p><label>{{ field.label }}</label>{{ field(class_="w3-input") }}</p>
-        {% endfor %}
-        <p><button class="w3-button w3-section w3-orange">Submit</button></p>
-      </div>
-      <footer class="w3-container w3-theme">
-        <p>Reseting or deleting account will <b>permanently</b> delete orders and reset the balance.</p>
-      </footer>
-    </form>
-    <br>
+{% block content %}
+<form class="w3-card w3-white" method="POST">
+  <header class="w3-container w3-theme">
+    <h2>{{ form_header }}</h1>
+  </header>
+  <div class="w3-container w3-white">
+    {{ form.csrf_token }}
+    {% for field in form if field.type != "CSRFTokenField" %}
+    <p><label>{{ field.label }}</label>{{ field(class_="w3-input") }}</p>
+    {% endfor %}
+    <p><button class="w3-button w3-section w3-orange">Submit</button></p>
   </div>
-</div> <!-- End Middle Column -->
-
-<!-- Right Column -->
-<div class="w3-col m3">
-  <br>
-</div> <!-- End Right Column -->
+  <footer class="w3-container w3-theme">
+    <p>Reseting or deleting account will be <b>permanent</b>.</p>
+  </footer>
+</form>
 {% endblock %}
