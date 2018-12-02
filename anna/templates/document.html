@@ -54,6 +54,7 @@ const docapp = new Vue({
   el: '#docapp',
   data: {
     doc: "",
+    isIdle: true,
   },
   // Computed properties
   computed: {
@@ -68,22 +69,26 @@ const docapp = new Vue({
   },
   watch: {
     doc: function() {
+      this.isIdle = false;
       this.debouncedUpdateDoc();
     }
   },
-  {% endif %}
   // Event handlers
   methods: {
     updateDoc: function() {
       socket.emit('document', this.doc);
+      socket.isIdle = true;
     }
   }
+  {% endif %}
 });
 
 // Base sets up socket connection
 // Update entire document
 socket.on('document', function(content) {
-  docapp.doc = content;
+  if (docapp.isIdle) {
+    docapp.doc = content;
+  }
 });
 </script>
 {% endblock %}
