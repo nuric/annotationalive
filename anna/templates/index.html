@@ -1,0 +1,88 @@
+{% extends "main_base.html" %}
+{% block columns %}
+  <!-- Middle Column -->
+  <div class="w3-col l7 vl8">
+    <div class="w3-card w3-white">
+      <table class="w3-table w3-striped">
+        <tr class="w3-theme-l3">
+          <th>ID</th>
+          <th>Name</th>
+          <th>Content</th>
+          <th>Action</th>
+        </tr>
+        {% for d in docs %}
+        <tr>
+          <td>{{ d.id }}</td>
+          <td>{{ d.name }}</td>
+          <td>{{ d.content[:256] }}</td>
+          <td><a href="/d/{{ d.id }}" class="w3-button w3-block w3-theme-d4">View</a></td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <br>
+  </div> <!-- End Middle Column -->
+
+<div id="app"> <!-- Vue Wrapper for dynamic content -->
+  {% raw %}
+  <!-- Right Column -->
+  <div class="w3-col l3 vl2">
+    <div class="w3-card w3-white">
+      <div class="w3-container">
+        <div id="chatbox" class="w3-panel w3-border" style="min-height:60vh;max-height:60vh;overflow-y:scroll">
+          <p v-for="m in messages" style="margin:0px;white-space:pre-wrap;"><b v-bind:class="{ 'w3-text-theme': current_username == m.username }">{{ m.username }}:</b> {{ m.msg }}</p>
+        </div>
+        <textarea id="chatinput" v-on:keypress.enter.exact.prevent="sendchat" class="w3-input w3-margin-bottom" style="max-width:100%" placeholder="message"></textarea>
+      </div>
+    </div>
+    <br>
+  </div> <!-- End Right Column -->
+  {% endraw %}
+</div> <!-- End Vue Wrapper -->
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+{% if config['DEBUG'] %}
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+{% else %}
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+{% endif %}
+<script>
+// Setup socket connection
+const socket = io({query: { 'docid': -1 }});
+socket.on('connect', function() {
+  console.log("Socket connected.")
+});
+
+// Setup Vue dynamic components
+var app = new Vue({
+  el: '#app',
+  data: {
+    current_username: "{{ current_user.username }}",
+    messages: [] // chat messages
+  },
+  // Event handlers
+  methods: {
+    sendchat: function(event) {
+      if (/\S/.test(event.target.value)) {
+        payload = {username: '{{ current_user.username }}',
+                   msg: event.target.value};
+        socket.emit('chat', payload);
+        event.target.value = "";
+      }
+    },
+    addmessage: function(msg) {
+      this.messages.push(msg);
+      this.$nextTick(function() {
+        var container = this.$el.querySelector("#chatbox");
+        container.scroll({top: container.scrollHeight, behavior: 'smooth'});
+      });
+    }
+  }
+});
+
+// Handle incoming socket messages
+socket.on('chat', app.addmessage);
+</script>
+{% endblock %}
