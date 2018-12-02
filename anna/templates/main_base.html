@@ -55,8 +55,8 @@
   <!-- Vue Wrapper for chat content -->
   <div id="chatapp" class="w3-sidebar w3-card w3-animate-right" style="width:25%;right:0px;top:0px">
     {% raw %}
-    <div class="w3-container">
-      <div id="chatbox" class="w3-panel w3-border" style="min-height:60vh;max-height:60vh;overflow-y:scroll">
+    <div class="w3-container" style="height:100%">
+      <div id="chatbox" class="w3-panel w3-border" style="min-height:80%;overflow-y:scroll">
         <p v-for="m in messages" style="margin:0px;white-space:pre-wrap;"><b v-bind:class="{ 'w3-text-theme': current_username == m.username }">{{ m.username }}:</b> {{ m.msg }}</p>
       </div>
       <textarea id="chatinput" v-on:keypress.enter.exact.prevent="sendchat" class="w3-input w3-margin-bottom" style="max-width:100%" placeholder="message"></textarea>
@@ -116,12 +116,12 @@ function toggleAccord(id) {
 {% endif %}
 <script>
 // Setup socket connection
-const socket = io({query: { 'docid': -1 }});
+const socket = io({query: { 'docid': {{ doc.id if doc else -1 }} }});
 socket.on('connect', function() {
   console.log("Socket connected.")
 });
 // Setup Vue dynamic components
-var app = new Vue({
+const chatapp = new Vue({
   el: '#chatapp',
   data: {
     current_username: "{{ current_user.username }}",
@@ -147,7 +147,7 @@ var app = new Vue({
   }
 });
 // Handle incoming socket messages
-socket.on('chat', app.addmessage);
+socket.on('chat', chatapp.addmessage);
 </script>
 {% endblock %}
 

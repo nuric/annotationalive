@@ -16,17 +16,16 @@
 </style>
 {% endblock %}
 
-{% block columns %}
-<div id="app"> <!-- Vue Wrapper for dynamic content -->
-  <!-- Middle Column -->
-  <div class="w3-col l7 vl8">
+{% block navbar %}
+<button class="w3-bar-item w3-button" onclick="openTab('showdown_source')">Source</button>
+<button class="w3-bar-item w3-button" onclick="openTab('showdown_out')">Rendered</button>
+{% endblock %}
+
+{% block content %}
+<div id="docapp"> <!-- Vue Wrapper for doc application -->
     <div class="w3-row-padding">
-      <div class="w3-bar w3-theme-d3 w3-border w3-margin-bottom">
-        <button class="w3-bar-item w3-button" onclick="openTab('showdown_source')">Source</button>
-        <button class="w3-bar-item w3-button" onclick="openTab('showdown_out')">Rendered</button>
-      </div>
       <div id="showdown_source" class="w3-card w3-white w3-padding tab" style="display:none">
-        <textarea v-model="doc" style="width:100%;height:100%;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
+        <textarea v-model="doc" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
       <br>
@@ -34,33 +33,11 @@
       </div>
       <br>
     </div>
-  </div> <!-- End Middle Column -->
-
-  {% raw %}
-  <!-- Right Column -->
-  <div class="w3-col l3 vl2">
-    <div class="w3-card w3-white">
-      <div class="w3-container">
-        <div id="chatbox" class="w3-panel w3-border" style="min-height:60vh;max-height:60vh;overflow-y:scroll">
-          <p v-for="m in messages" style="margin:0px;white-space:pre-wrap;"><b v-bind:class="{ 'w3-text-theme': current_username == m.username }">{{ m.username }}:</b> {{ m.msg }}</p>
-        </div>
-        <textarea id="chatinput" v-on:keypress.enter.exact.prevent="sendchat" class="w3-input w3-margin-bottom" style="max-width:100%" placeholder="message"></textarea>
-      </div>
-    </div>
-    <br>
-  </div> <!-- End Right Column -->
-  {% endraw %}
 </div> <!-- End Vue Wrapper -->
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 <script src="https://cdn.rawgit.com/showdownjs/showdown/1.9.0/dist/showdown.min.js"></script>
-{% if config['DEBUG'] %}
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-{% else %}
-<script src="https://cdn.jsdelivr.net/npm/vue"></script>
-{% endif %}
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
 <script>
 // Basic tab functionality
@@ -71,22 +48,14 @@ function openTab(tabid) {
     }
     document.getElementById(tabid).style.display = "block"; 
 }
-
+// Showdown markdown renderer
 const converter = new showdown.Converter();
-// Setup socket connection
-const socket = io({query: { 'docid': {{ doc.id }} }});
-socket.on('connect', function() {
-  console.log("Socket connected.")
-});
 
 // Setup Vue dynamic components
-var app = new Vue({
-  el: '#app',
+const docapp = new Vue({
+  el: '#docapp',
   data: {
-    current_username: "{{ current_user.username }}",
-    current_docid: "{{ doc.id }}",
     doc: "",
-    messages: [] // chat messages
   },
   // Computed properties
   computed: {
@@ -107,34 +76,16 @@ var app = new Vue({
   {% endif %}
   // Event handlers
   methods: {
-    sendchat: function(event) {
-      if (/\S/.test(event.target.value)) {
-        payload = {username: '{{ current_user.username }}',
-                   msg: event.target.value};
-        socket.emit('chat', payload);
-        event.target.value = "";
-      }
-    },
-    addmessage: function(msg) {
-      this.messages.push(msg);
-      this.$nextTick(function() {
-        var container = this.$el.querySelector("#chatbox");
-        container.scroll({top: container.scrollHeight, behavior: 'smooth'});
-      });
-      //container.scrollTop = container.scrollHeight;
-    },
     updateDoc: function() {
       socket.emit('document', this.doc);
     }
   }
 });
 
-// Handle incoming socket messages
-socket.on('chat', app.addmessage);
-
+// Base sets up socket connection
 // Update entire document
 socket.on('document', function(content) {
-  app.doc = content;
+  docapp.doc = content;
 });
 </script>
 {% endblock %}
