@@ -26,12 +26,12 @@
     <!-- Accordion -->
     <div class="w3-card">
       <div class="w3-white">
-        <button onclick="toggle('accord1')" class="w3-button w3-block w3-theme-l1 w3-left-align"><i class="material-icons">settings</i> Account</button>
+        <button onclick="toggleAccord('accord1')" class="w3-button w3-block w3-theme-l1 w3-left-align"><i class="material-icons">settings</i> Account</button>
         <div id="accord1" class="w3-hide w3-container">
           <a href="/account_reset" class="w3-button w3-section w3-orange w3-block w3-round">Reset Account</a>
           <a href="/account_delete" class="w3-button w3-section w3-red w3-block w3-round">Delete Account</a>
         </div>
-        <button onclick="toggle('accord2')" class="w3-button w3-block w3-theme-l1 w3-left-align"><i class="material-icons">contact_support</i> Issues</button>
+        <button onclick="toggleAccord('accord2')" class="w3-button w3-block w3-theme-l1 w3-left-align"><i class="material-icons">contact_support</i> Issues</button>
         <div id="accord2" class="w3-hide w3-container">
           <p>For any issues please contact the deployment administrator.</p>
           <p>version: {{ config['VERSION'] }}</p>
@@ -42,6 +42,11 @@
   </div> <!-- End Left Sidebar -->
 
   <div id="main_content" style="margin-left:21%;margin-right:26%">
+     <div class="w3-bar w3-card w3-theme-d3">
+      <button onclick="toggleSide('leftsidebar')" class="w3-bar-item w3-button w3-padding-large"><i class="material-icons">list</i></button>
+      <button onclick="toggleSide('chatapp')" class="w3-bar-item w3-button w3-right w3-padding-large"><i class="material-icons">toc</i></button>
+     </div>
+     <br>
     {% block content %}
     {% endblock %}
   </div>
@@ -64,8 +69,30 @@ function update_time() {
   el.innerHTML = new Date().toLocaleString();
 }
 setInterval(update_time, 1000);
+// Sidebars
+function toggleSide(sidebar) {
+  main = document.getElementById("main_content");
+  sideb = document.getElementById(sidebar);
+  if (sidebar == "leftsidebar") {
+    if (sideb.style.display == "none") {
+      main.style.marginLeft = "21%";
+      sideb.style.display = "block";
+    } else {
+      main.style.marginLeft = "1%";
+      sideb.style.display = "none";
+    }
+  } else {
+    if (sideb.style.display == "none") {
+      main.style.marginRight = "26%";
+      sideb.style.display = "block";
+    } else {
+      main.style.marginRight = "1%";
+      sideb.style.display = "none";
+    }
+  }
+}
 // Accordion
-function toggle(id) {
+function toggleAccord(id) {
   var x = document.getElementById(id);
   if (x.className.indexOf("w3-show") == -1) {
     x.className += " w3-show";
