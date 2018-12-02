@@ -82,7 +82,7 @@ def handle_connect():
   docid = request.args.get('docid', type=int)
   if docid and docid != -1:
     doc = Document.query.get(docid)
-    if doc:
+    if doc is not None:
       join_room(doc.id)
       emit('document', doc.content)
   else:
@@ -98,7 +98,6 @@ def handle_chat(json):
 @socketio.on('document')
 def handle_doc_update(content):
   """Handle incoming chat messages."""
-  print("HERE:", current_user)
   docid = request.args.get('docid', type=int)
   doc = Document.query.get_or_404(docid)
   if current_user and current_user.id == doc.user_id:

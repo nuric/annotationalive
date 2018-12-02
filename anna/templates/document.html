@@ -19,7 +19,6 @@
 
 {% block columns %}
 <div id="app"> <!-- Vue Wrapper for dynamic content -->
-  {% raw %}
   <!-- Middle Column -->
   <div class="w3-col l7 vl8">
     <div class="w3-row-padding">
@@ -27,17 +26,18 @@
         <button class="w3-bar-item w3-button" onclick="openTab('showdown_source')">Source</button>
         <button class="w3-bar-item w3-button" onclick="openTab('showdown_out')">Rendered</button>
       </div>
-      <div id="showdown_source" class="w3-card w3-white w3-padding tab">
-        <textarea v-model="doc" style="width:100%;height:100%;max-width:100%">
+      <div id="showdown_source" class="w3-card w3-white w3-padding tab" style="display:none">
+        <textarea v-model="doc" style="width:100%;height:100%;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
       <br>
-      <div id="showdown_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body" style='display:none'>
+      <div id="showdown_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body">
       </div>
       <br>
     </div>
   </div> <!-- End Middle Column -->
 
+  {% raw %}
   <!-- Right Column -->
   <div class="w3-col l3 vl2">
     <div class="w3-card w3-white">
@@ -95,6 +95,7 @@ var app = new Vue({
       return converter.makeHtml(this.doc);
     }
   },
+  {% if current_user.id == doc.user_id %}
   // Setup document updates
   created: function() {
     this.debouncedUpdateDoc = _.debounce(this.updateDoc, 500);
@@ -104,6 +105,7 @@ var app = new Vue({
       this.debouncedUpdateDoc();
     }
   },
+  {% endif %}
   // Event handlers
   methods: {
     sendchat: function(event) {
@@ -132,8 +134,8 @@ var app = new Vue({
 socket.on('chat', app.addmessage);
 
 // Update entire document
-socket.on('document', function(doc) {
-  app.doc = doc;
+socket.on('document', function(content) {
+  app.doc = content;
 });
 </script>
 {% endblock %}
