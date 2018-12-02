@@ -44,6 +44,8 @@
   <div id="main_content" style="margin-left:21%;margin-right:26%">
      <div class="w3-bar w3-card w3-theme-d3">
       <button onclick="toggleSide('leftsidebar')" class="w3-bar-item w3-button w3-padding-large"><i class="material-icons">list</i></button>
+      {% block navbar %}
+      {% endblock %}
       <button onclick="toggleSide('chatapp')" class="w3-bar-item w3-button w3-right w3-padding-large"><i class="material-icons">toc</i></button>
      </div>
      <br>

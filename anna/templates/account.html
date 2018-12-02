@@ -1,9 +1,9 @@
 {% extends "main_base.html" %}
+{% block navbar %}
+<span class="w3-bar-item w3-padding-large">{{ form_header }}</span>
+{% endblock %}
 {% block content %}
 <form class="w3-card w3-white" method="POST">
-  <header class="w3-container w3-theme">
-    <h2>{{ form_header }}</h1>
-  </header>
   <div class="w3-container w3-white">
     {{ form.csrf_token }}
     {% for field in form if field.type != "CSRFTokenField" %}
