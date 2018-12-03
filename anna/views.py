@@ -33,45 +33,23 @@ def login():
     return redirect(url_for('index'))
   return render_template('login.html', form=form)
 
-def rows_to_dicts(objs, attributes):
-  """Convert SQLAlchemy object to dictionary."""
-  l = list()
-  for obj in objs:
-    d = dict()
-    for att in attributes:
-      elem = getattr(obj, att, None)
-      d[att] = elem
-      if elem is not None and isinstance(elem, datetime.datetime):
-        d[att] = elem.isoformat()
-    l.append(d)
-  return l
-
 @app.route('/')
 @login_required
 def index():
   """Index page."""
   return render_template('index.html', docs=Document.query.all())
 
-@app.route('/new/<docname>')
+@app.route('/d/<docname>')
 @login_required
-def new_document(docname):
-  """Create a new document with given name."""
-  # Check if user is admin
-  if not current_user.is_admin:
-    abort(401)
+def document(docname):
+  """Document page."""
   # Check if already exists
   doc = Document.query.filter_by(name=docname).first()
-  if not doc:
+  # Create if the user is admin
+  if not doc and current_user.is_admin:
     doc = Document(user_id=current_user.id, name=docname)
     db.session.add(doc)
     db.session.commit()
-  return redirect(url_for('document', docid=doc.id))
-
-@app.route('/d/<int:docid>')
-@login_required
-def document(docid):
-  """Document page."""
-  doc = Document.query.get_or_404(docid)
   return render_template('document.html', doc=doc)
 
 @socketio.on('connect')
@@ -80,13 +58,17 @@ def handle_connect():
   if not current_user.is_authenticated:
     return False
   docid = request.args.get('docid', type=int)
+  # Partition users based on the document id
+  # which corresponds to the room id
   if docid and docid != -1:
     doc = Document.query.get(docid)
     if doc is not None:
       join_room(doc.id)
       emit('document', doc.content)
+    else:
+      return False
   else:
-    join_room(-1)
+    join_room(-1) # Lobby
   return True
 
 @socketio.on('chat')
@@ -108,6 +90,7 @@ def handle_doc_update(content):
 
 def reset_account():
   """Reset current active account."""
+  # Currently nothing happens, for future use
   app.logger.info("Reset user: %s", current_user.username)
   return redirect(url_for('index'))
 
