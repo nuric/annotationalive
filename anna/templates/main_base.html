@@ -116,7 +116,7 @@ function toggleAccord(id) {
 {% endif %}
 <script>
 // Setup socket connection
-const socket = io({query: { 'docid': {{ doc.id if doc else -1 }} },
+const socket = io({query: { 'docid': {{ doc.id if doc is defined else -1 }} },
                    autoConnect: false});
 socket.on('connect', function() {
   console.log("Socket connected.")
