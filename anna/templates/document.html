@@ -19,6 +19,7 @@
 {% block navbar %}
 <button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('showdown_source')">Source</button>
 <button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('showdown_out')">Rendered</button>
+<button class="w3-bar-item w3-button w3-padding-large" onclick="toggleAutoScroll(this)">AutoScroll</button>
 <button class="w3-bar-item w3-button w3-padding-large" onclick="elementPrint('showdown_out')">Print</button>
 {% endblock %}
 
@@ -29,7 +30,7 @@
         <textarea v-model="doc" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
-      <div id="showdown_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body">
+      <div id="showdown_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body" style="margin-bottom:100px">
       </div>
     </div>
 </div> <!-- End Vue Wrapper -->
@@ -69,10 +70,17 @@ const docapp = new Vue({
   data: {
     doc: "",
     isIdle: true,
+    autoscroll: false,
   },
   // Computed properties
   computed: {
     renderedDoc: function() {
+      if (this.autoscroll) {
+        this.$nextTick(function() {
+          var container = document.getElementById("main_content");
+          window.scroll({top: container.scrollHeight, behavior: 'smooth'});
+        });
+      }
       return converter.makeHtml(this.doc);
     }
   },
@@ -96,6 +104,12 @@ const docapp = new Vue({
   }
   {% endif %}
 });
+
+// Basic autoscroll
+function toggleAutoScroll(el) {
+  el.classList.toggle("w3-red");
+  docapp.autoscroll = !docapp.autoscroll;
+}
 
 // Base sets up socket connection
 // Update entire document
