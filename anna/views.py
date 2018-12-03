@@ -51,6 +51,8 @@ def document(docname):
     db.session.add(doc)
     db.session.commit()
     return render_template('document.html', doc=doc)
+  elif doc:
+    return render_template('document.html', doc=doc)
   abort(404)
 
 @socketio.on('connect')
