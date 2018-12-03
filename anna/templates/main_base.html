@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
 <!-- Page Container -->
-<div class="w3-row-padding" style="margin-top:10px">    
+<div>    
   <!-- Left Sidebar -->
   <div id="leftsidebar" class="w3-sidebar w3-card w3-animate-left" style="width:20%;left:0px;top:0px">
     <!-- Time -->
@@ -41,14 +41,16 @@
     <br>
   </div> <!-- End Left Sidebar -->
 
-  <div id="main_content" style="margin-left:21%;margin-right:26%">
-     <div class="w3-bar w3-card w3-theme-d3">
+   <!-- Content Bar -->
+   <div id="main_content_bar" class="w3-card w3-theme-d3" style="position:fixed;left:21%;right:26%;z-index:1;text-align:center">
       <button onclick="toggleSide('leftsidebar')" class="w3-bar-item w3-button w3-padding-large"><i class="material-icons">list</i></button>
       {% block navbar %}
       {% endblock %}
-      <button onclick="toggleSide('chatapp')" class="w3-bar-item w3-button w3-right w3-padding-large"><i class="material-icons">toc</i></button>
+      <button onclick="toggleSide('chatapp')" class="w3-bar-item w3-button w3-padding-large"><i class="material-icons">toc</i></button>
      </div>
-     <br>
+   </div>
+  <!-- Main Content -->
+  <div id="main_content" style="position:absolute;top:60px;left:21%;right:26%;margin-bottom:100px">
     {% block content %}
     {% endblock %}
   </div>
@@ -74,21 +76,26 @@ setInterval(update_time, 1000);
 // Sidebars
 function toggleSide(sidebar) {
   main = document.getElementById("main_content");
+  mbar = document.getElementById("main_content_bar")
   sideb = document.getElementById(sidebar);
   if (sidebar == "leftsidebar") {
     if (sideb.style.display == "none") {
-      main.style.marginLeft = "21%";
+      main.style.left = "21%";
+      mbar.style.left = "21%";
       sideb.style.display = "block";
     } else {
-      main.style.marginLeft = "1%";
+      main.style.left = "1%";
+      mbar.style.left = "1%";
       sideb.style.display = "none";
     }
   } else {
     if (sideb.style.display == "none") {
-      main.style.marginRight = "26%";
+      main.style.right = "26%";
+      mbar.style.right = "26%";
       sideb.style.display = "block";
     } else {
-      main.style.marginRight = "1%";
+      main.style.right = "1%";
+      mbar.style.right = "1%";
       sideb.style.display = "none";
     }
   }
