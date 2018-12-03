@@ -50,7 +50,8 @@ def document(docname):
     doc = Document(user_id=current_user.id, name=docname)
     db.session.add(doc)
     db.session.commit()
-  return render_template('document.html', doc=doc)
+    return render_template('document.html', doc=doc)
+  abort(404)
 
 @socketio.on('connect')
 def handle_connect():
