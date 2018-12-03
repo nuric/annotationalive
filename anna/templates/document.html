@@ -91,7 +91,7 @@ const docapp = new Vue({
   methods: {
     updateDoc: function() {
       socket.emit('document', this.doc);
-      socket.isIdle = true;
+      this.isIdle = true;
     }
   }
   {% endif %}
