@@ -1,5 +1,5 @@
 # :memo: Annotation Alive
-ANNotatioN Alive is a minimal tool for live markdown editing. It is designed to for a lecture, presentation environment. It assumes there is one editor and many viewers. The idea is to build an extensible platform covering fundamentals such as socket connections such that it can customised heavily afterwards for the specific use case.
+ANNotatioN Alive is a minimal tool for live markdown editing. It is designed for a lecture, presentation environment. It assumes there is one editor and many viewers. The idea is to build an extensible platform covering fundamentals such as socket connections so that it can customised heavily afterwards for the specific use case.
 
 ![screenshot](https://github.com/nuric/annotationalive/raw/master/anna_screenshot.jpg)
 
@@ -28,12 +28,12 @@ Key things to consider before and after running:
 ## Limitations
 The app is designed to be minimal and doesn't come with some, perhaps expected, features:
  - It assumes there only one editor. The entire document is sent as the update not incremental changes.
- - There is no full CRUD on documents or user accounts. No password change, no document delete etc. But there is structure such account reset left as a starting point.
- - Chat is ephemeral, it doesn't store a history so on a page refresh it start clean and only renders newly received messages.
+ - There is no full CRUD on documents or user accounts. No password change, no document delete etc. But there is structure such as account reset left as a starting point.
+ - Chat is ephemeral, it doesn't store a history so on a page refresh it will start clean and only render newly received messages.
 
 ## FAQ
  - **Why is the source code 2 space indented?** The answer is a combination of personal style and to stop direct copy-paste from other resources. The code is linted using [PyLint](https://www.pylint.org/) although there are cases it is disabled on purpose.
- - **Why are the document updates not instant?** There is a 500ms debounce delay so it accumulates changes and then sends the final state of the document after in order to reduce traffic.
+ - **Why are the document updates not instant?** There is a 500ms debounce delay so it accumulates changes and then sends the final state of the document in order to reduce network traffic.
 
 ## Contributing
 Bug fixes and small improvements following the existing design principle are welcome. You are encouraged to fork and customise for your use case. Some initial ideas are:
