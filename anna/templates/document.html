@@ -1,6 +1,7 @@
 {% extends "main_base.html" %}
 {% block head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/github.min.css">
 <style>
 .markdown-body {
   box-sizing: border-box;
@@ -39,6 +40,7 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.min.js" integrity="sha256-JdPG0DllQPmyIeUeYRUCvk6K3tY7C7RZyVKEcT56yzQ=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
 <script>
 // Basic tab functionality
 function openTab(tabid) {
@@ -61,8 +63,19 @@ function elementPrint(id) {
   WinPrint.close();
 }
 
-// Showdown markdown renderer
-const md = new markdownit();
+// Markdown renderer
+const md = markdownit({
+  // Syntax highligthing
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value;
+      } catch (__) {}
+    }
+
+    return ''; // use external default escaping
+  }
+});
 
 // Setup Vue dynamic components
 const docapp = new Vue({
