@@ -17,27 +17,27 @@
 {% endblock %}
 
 {% block navbar %}
-<button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('showdown_source')">Source</button>
-<button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('showdown_out')">Rendered</button>
+<button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('md_source')">Source</button>
+<button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('md_out')">Rendered</button>
 <button class="w3-bar-item w3-button w3-padding-large" onclick="toggleAutoScroll(this)">AutoScroll</button>
-<button class="w3-bar-item w3-button w3-padding-large" onclick="elementPrint('showdown_out')">Print</button>
+<button class="w3-bar-item w3-button w3-padding-large" onclick="elementPrint('md_out')">Print</button>
 {% endblock %}
 
 {% block content %}
 <div id="docapp"> <!-- Vue Wrapper for doc application -->
     <div class="w3-row-padding">
-      <div id="showdown_source" class="w3-card w3-white w3-padding tab" style="display:none">
+      <div id="md_source" class="w3-card w3-white w3-padding tab" style="display:none">
         <textarea v-model="doc" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
-      <div id="showdown_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body" style="margin-bottom:100px">
+      <div id="md_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body" style="margin-bottom:100px">
       </div>
     </div>
 </div> <!-- End Vue Wrapper -->
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.rawgit.com/showdownjs/showdown/1.9.0/dist/showdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.min.js" integrity="sha256-JdPG0DllQPmyIeUeYRUCvk6K3tY7C7RZyVKEcT56yzQ=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
 <script>
 // Basic tab functionality
@@ -62,7 +62,7 @@ function elementPrint(id) {
 }
 
 // Showdown markdown renderer
-const converter = new showdown.Converter();
+const md = new markdownit();
 
 // Setup Vue dynamic components
 const docapp = new Vue({
@@ -81,7 +81,7 @@ const docapp = new Vue({
           window.scroll({top: container.scrollHeight, behavior: 'smooth'});
         });
       }
-      return converter.makeHtml(this.doc);
+      return md.render(this.doc);
     }
   },
   {% if current_user.id == doc.user_id %}
