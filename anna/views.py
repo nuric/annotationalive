@@ -46,12 +46,12 @@ def document(docname):
   # Check if already exists
   doc = Document.query.filter_by(name=docname).first()
   # Create if the user is admin
-  if not doc and current_user.is_admin:
+  if doc is None and current_user.is_admin:
     doc = Document(user_id=current_user.id, name=docname)
     db.session.add(doc)
     db.session.commit()
     return render_template('document.html', doc=doc)
-  elif doc:
+  elif doc is not None:
     return render_template('document.html', doc=doc)
   abort(404)
 
