@@ -1,7 +1,8 @@
 {% extends "main_base.html" %}
 {% block head %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css" integrity="sha256-Ndk1ry+oGNFEaXt4kxlW/SYLbxat1O0DhaDd+lob0SY=" crossorigin="anonymous" />
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/github.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css" integrity="sha256-BZ71u1P7NUocEN9mKkcAovn3q5JPm/r9xVyjWh/Kqrc=" crossorigin="anonymous" />
 <style>
 .markdown-body {
   box-sizing: border-box;
@@ -41,6 +42,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.min.js" integrity="sha256-JdPG0DllQPmyIeUeYRUCvk6K3tY7C7RZyVKEcT56yzQ=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.js" integrity="sha256-q01RVaHUJiYq9aq0FwkI6GAmMtOmRgToK8aEHHm4Xl8=" crossorigin="anonymous"></script>
 <script>
 // Basic tab functionality
 function openTab(tabid) {
@@ -76,6 +78,30 @@ const md = markdownit({
     return ''; // use external default escaping
   }
 });
+
+// Katex math support
+(function() {
+// Default katex options
+kopts = { displayMode: true };
+// Setup rendering rules
+const defaultRender = md.renderer.rules.text,
+      blockmathRE   = /\$\$[^\$]*\$\$/g,
+      inlinemathRE  = /\$[^\$]*\$/g;
+// Override default rendering function
+md.renderer.rules.text = function (tokens, idx, options, env, self) {
+  var content = tokens[idx].content;
+  // Check for block math first
+  if (blockmathRE.test(content)) {
+    return content.replace(blockmathRE, (s) => katex.renderToString(s.substring(2, s.length-2), kopts));
+  }
+  // Check for inline math
+  if (inlinemathRE.test(content)) {
+    return content.replace(inlinemathRE, (s) => katex.renderToString(s.substring(1, s.length-1)));
+  }
+  // pass token to default renderer.
+  return defaultRender(tokens, idx, options, env, self);
+};
+})();
 
 // Setup Vue dynamic components
 const docapp = new Vue({
