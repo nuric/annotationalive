@@ -64,3 +64,68 @@ md.renderer.rules.text = function (tokens, idx, options, env, self) {
   return defaultRender(tokens, idx, options, env, self);
 };
 })();
+
+// Block math tokeniser
+function math_block(state, start, end, silent) {
+  const pos = state.bMarks[start] + state.tShift[start];
+  // Check start condition
+  if (pos + 2 > state.eMarks[start] || state.src[pos]!=='$' || state.src[pos+1]!=='$') { return false; }
+
+  // Need to find where math block closes
+  var lastLine = start-1, token, endi;
+  do {
+    lastLine += 1;
+    endi = state.eMarks[lastLine];
+    endi = state.skipSpacesBack(endi, 0);
+    if (endi < 1) { return false; }
+  } while(state.src[endi]!=='$' && state.src[endi-1]!=='$')
+  
+  // No idea what this silent business is for
+  if (silent) { return true; }
+
+  state.line = lastLine + 1;
+  token = state.push('math_block', 'p', 0);
+  token.content = state.getLines(start, state.line, state.tShift[start], false).replace(/\$\$/g, '');
+  token.map = [ start, state.line ];
+  token.markup = '$$';
+  return true;
+}
+md.block.ruler.before('paragraph', 'math_block', math_block);
+
+// Inline math tokeniser
+function math_inline(state, silent) {
+  var start, max, marker, matchStart, matchEnd, token,
+      pos = state.pos;
+  // Check start condition
+  if (state.src[pos] !== '$') { return false; }
+
+  // Find ending point
+  start = pos;
+  pos++;
+  max = state.posMax;
+  while (pos < max && state.src[pos] === '$') { pos++; }
+
+  marker = state.src.slice(start, pos);
+
+  matchStart = matchEnd = pos;
+  while ((matchStart = state.src.indexOf('$', matchEnd)) !== -1) {
+    matchEnd = matchStart + 1;
+    while (matchEnd < max && state.src[matchEnd] === '$') { matchEnd++; }
+    if (matchEnd - matchStart === marker.length) {
+      if (!silent) {
+        token         = state.push('math_inline', 'span', 0);
+        token.markup  = marker;
+        token.content = state.src.slice(pos, matchStart)
+                                 .replace(/[ \n]+/g, ' ')
+                                 .trim();
+      }
+      state.pos = matchEnd;
+      return true;
+    }
+  }
+
+  if (!silent) { state.pending += marker; }
+  state.pos += marker.length;
+  return true;
+}
+md.inline.ruler.after('escape', 'math_inline', math_inline);
