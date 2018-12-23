@@ -32,7 +32,7 @@
         <textarea v-model="doc" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
-      <div id="md_out" v-html="renderedDoc" class="w3-card w3-white w3-padding tab markdown-body" style="margin-bottom:100px">
+      <div id="md_out" class="w3-card w3-white w3-padding tab markdown-body" style="margin-bottom:100px">
       </div>
     </div>
 </div> <!-- End Vue Wrapper -->
@@ -43,6 +43,7 @@
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.js" integrity="sha256-q01RVaHUJiYq9aq0FwkI6GAmMtOmRgToK8aEHHm4Xl8=" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/incrementaldom/0.5.1/incremental-dom-min.js"></script>
 <script src="{{ url_for('static', filename='document.js') }}"></script>
 <script>
 // Setup Vue dynamic components
@@ -53,28 +54,10 @@ const docapp = new Vue({
     isIdle: true,
     autoscroll: false,
   },
-  // Computed properties
-  computed: {
-    renderedDoc: function() {
-      if (this.autoscroll) {
-        this.$nextTick(function() {
-          var container = document.getElementById("main_content");
-          window.scroll({top: container.scrollHeight, behavior: 'smooth'});
-        });
-      }
-      return md.render(this.doc);
-    }
-  },
   {% if current_user.id == doc.user_id %}
   // Setup document updates
   created: function() {
     this.debouncedUpdateDoc = _.debounce(this.updateDoc, 500);
-  },
-  watch: {
-    doc: function() {
-      this.isIdle = false;
-      this.debouncedUpdateDoc();
-    }
   },
   // Event handlers
   methods: {
@@ -82,8 +65,23 @@ const docapp = new Vue({
       socket.emit('document', this.doc);
       this.isIdle = true;
     }
-  }
+  },
   {% endif %}
+  watch: {
+    doc: function() {
+      {% if current_user.id == doc.user_id %}
+      this.isIdle = false;
+      this.debouncedUpdateDoc();
+      {% endif %}
+      if (this.autoscroll) {
+        this.$nextTick(function() {
+          const container = document.getElementById("main_content");
+          window.scroll({top: container.scrollHeight, behavior: 'smooth'});
+        });
+      }
+      incrementalRender(md.parse(this.doc));
+    }
+  },
 });
 
 // Basic autoscroll

@@ -41,30 +41,6 @@ const md = markdownit({
   }
 });
 
-// Katex math support
-(function() {
-// Default katex options
-kopts = { displayMode: true };
-// Setup rendering rules
-const defaultRender = md.renderer.rules.text,
-      blockmathRE   = /\$\$[^\$]*\$\$/g,
-      inlinemathRE  = /\$[^\$]*\$/g;
-// Override default rendering function
-md.renderer.rules.text = function (tokens, idx, options, env, self) {
-  var content = tokens[idx].content;
-  // Check for block math first
-  if (blockmathRE.test(content)) {
-    return content.replace(blockmathRE, (s) => katex.renderToString(s.substring(2, s.length-2), kopts));
-  }
-  // Check for inline math
-  if (inlinemathRE.test(content)) {
-    return content.replace(inlinemathRE, (s) => katex.renderToString(s.substring(1, s.length-1)));
-  }
-  // pass token to default renderer.
-  return defaultRender(tokens, idx, options, env, self);
-};
-})();
-
 // Block math tokeniser
 function math_block(state, start, end, silent) {
   const pos = state.bMarks[start] + state.tShift[start];
@@ -129,3 +105,84 @@ function math_inline(state, silent) {
   return true;
 }
 md.inline.ruler.after('escape', 'math_inline', math_inline);
+
+// Rendering HTML blobs
+function renderHTML(content) {
+  const el = IncrementalDOM.elementOpen('html-blob');
+  if (el.__cachedInnerHtml !== content) {
+    el.__cachedInnerHtml = content;
+    el.innerHTML = content;
+  }
+  IncrementalDOM.skip()
+  IncrementalDOM.elementClose('html-blob');
+}
+// Render token tag with content
+function renderInline(tokens, idx) {
+  var args = tokens[idx].attrs ? tokens[idx].attrs.flat() : [];
+  IncrementalDOM.elementOpen(tokens[idx].tag, idx, null, ...args);
+  IncrementalDOM.text(tokens[idx].content);
+  IncrementalDOM.elementClose(tokens[idx].tag);
+}
+const rules = {
+  code_inline: renderInline,
+  code_block: function(tokens, idx) {
+    IncrementalDOM.elementOpen('pre');
+    renderInline(tokens, idx);
+    IncrementalDOM.elementClose('pre');
+  },
+  math_block: function(tokens, idx) {
+    renderHTML(katex.renderToString(tokens[idx].content, { displayMode: true }));
+  },
+  math_inline: function(tokens, idx) {
+    renderHTML(katex.renderToString(tokens[idx].content));
+  },
+  fence: function(tokens, idx) {
+    IncrementalDOM.elementOpen('pre');
+    IncrementalDOM.elementOpen('code', idx);
+    var lang = tokens[idx].info ? tokens[idx].info.trim() : '';
+    renderHTML(md.options.highlight(tokens[idx].content, lang.split(/\s+/g)[0]));
+    IncrementalDOM.elementClose('code');
+    IncrementalDOM.elementClose('pre');
+  },
+  text: function(tokens, idx) {
+    IncrementalDOM.text(tokens[idx].content);
+  }
+};
+
+// Incremental DOM Renderer
+function renderToken(tokens, idx) {
+  var args = tokens[idx].attrs ? tokens[idx].attrs.flat() : [];
+  switch (tokens[idx].nesting) {
+    case 1:
+      IncrementalDOM.elementOpen(tokens[idx].tag, idx, null, ...args);
+      break;
+    case -1:
+      IncrementalDOM.elementClose(tokens[idx].tag);
+      break;
+    default:
+      IncrementalDOM.elementVoid(tokens[idx].tag, idx, null, ...args);
+  }
+}
+
+// Render to IncrementalDOM
+function incDOMRender(tokens) {
+  var i, token;
+  const len = tokens.length;
+
+  for (i = 0; i < len; i++) {
+    token = tokens[i];
+    if (token.type === 'inline') {
+       incDOMRender(token.children);
+    } else if (typeof rules[token.type] !== 'undefined') {
+      rules[token.type](tokens, i);
+    } else {
+      renderToken(tokens, i);
+    }
+  }
+}
+
+// Render and patch based on IncrementalDOM
+function incrementalRender(tokens) {
+  var md_out = document.getElementById('md_out');
+  IncrementalDOM.patch(md_out, incDOMRender, tokens);
+}
