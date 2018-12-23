@@ -140,7 +140,9 @@ const rules = {
     IncrementalDOM.elementOpen('pre');
     IncrementalDOM.elementOpen('code', idx);
     var lang = tokens[idx].info ? tokens[idx].info.trim() : '';
-    renderHTML(md.options.highlight(tokens[idx].content, lang.split(/\s+/g)[0]));
+    var content = md.options.highlight(tokens[idx].content, lang.split(/\s+/g)[0]); 
+    if (content) { renderHTML(content); }
+    else { IncrementalDOM.text(tokens[idx].content); }
     IncrementalDOM.elementClose('code');
     IncrementalDOM.elementClose('pre');
   },
