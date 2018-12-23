@@ -53,8 +53,8 @@ function math_block(state, start, end, silent) {
     lastLine += 1;
     endi = state.eMarks[lastLine];
     endi = state.skipSpacesBack(endi, 0);
-    if (endi < 1) { return false; }
-  } while(state.src[endi]!=='$' && state.src[endi-1]!=='$')
+    if (endi < 1 || lastLine == state.eMarks.length-1) { return false; }
+  } while(endi <= pos + 2 || (state.src[endi]!=='$' && state.src[endi-1]!=='$'))
   
   // No idea what this silent business is for
   if (silent) { return true; }
