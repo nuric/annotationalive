@@ -47,3 +47,5 @@ Bug fixes and small improvements following the existing design principle are wel
  - [Vue.JS](https://vuejs.org/) - dynamic front-end rendering
  - [W3.CSS](https://www.w3schools.com/w3css/) - front-end CSS library
  - [markdown-it](https://github.com/markdown-it/markdown-it) - markdown renderer
+ - [highlight.js](https://highlightjs.org/) - syntax highlighter
+ - [katex](https://katex.org/) - math renderer
