@@ -167,14 +167,22 @@ function renderToken(tokens, idx) {
 }
 
 // Render to IncrementalDOM
-function incDOMRender(tokens) {
-  var i, token;
-  const len = tokens.length;
+function incDOMRender(data) {
+  var i, token, count;
+  const tokens = data.tokens,
+        slide = data.slide || 0,
+        len = tokens.length;
 
-  for (i = 0; i < len; i++) {
+  for (i = 0, count = 0; i < len; i++) {
     token = tokens[i];
+    // Check slide number
+    if (token.type === 'hr') {
+      count++;
+      if (slide > 0 && count == slide) { break; }
+    }
+    // Render tokens as usual
     if (token.type === 'inline') {
-       incDOMRender(token.children);
+       incDOMRender({tokens: token.children});
     } else if (typeof rules[token.type] !== 'undefined') {
       rules[token.type](tokens, i);
     } else {
@@ -184,7 +192,7 @@ function incDOMRender(tokens) {
 }
 
 // Render and patch based on IncrementalDOM
-function incrementalRender(tokens) {
+function incrementalRender(tokens, slide=0) {
   var md_out = document.getElementById('md_out');
-  IncrementalDOM.patch(md_out, incDOMRender, tokens);
+  IncrementalDOM.patch(md_out, incDOMRender, {tokens: tokens, slide: slide});
 }

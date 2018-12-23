@@ -82,7 +82,7 @@ def handle_chat(json):
 
 @socketio.on('document')
 def handle_doc_update(content):
-  """Handle incoming chat messages."""
+  """Handle incoming document updates."""
   docid = request.args.get('docid', type=int)
   doc = Document.query.get_or_404(docid)
   if current_user and current_user.id == doc.user_id:
@@ -90,6 +90,12 @@ def handle_doc_update(content):
     doc.updated = datetime.datetime.now()
     db.session.commit()
     emit('document', content, room=docid)
+
+@socketio.on('slide')
+def handle_doc_update(slide_num):
+  """Handle incoming chat messages."""
+  docid = request.args.get('docid', type=int)
+  emit('slide', slide_num, room=docid)
 
 def reset_account():
   """Reset current active account."""

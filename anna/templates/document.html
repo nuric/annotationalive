@@ -20,9 +20,7 @@
 
 {% block navbar %}
 <button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('md_source')">Source</button>
-<button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('md_out')">Rendered</button>
-<button class="w3-bar-item w3-button w3-padding-large" onclick="toggleAutoScroll(this)">AutoScroll</button>
-<button class="w3-bar-item w3-button w3-padding-large" onclick="elementPrint('md_out')">Print</button>
+<button class="w3-bar-item w3-button w3-padding-large" onclick="openTab('md_container')">Rendered</button>
 {% endblock %}
 
 {% block content %}
@@ -32,7 +30,14 @@
         <textarea v-model="doc" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
-      <div id="md_out" class="w3-card w3-white w3-padding tab markdown-body" style="margin-bottom:100px">
+      <div id="md_container" class="w3-margin-top tab">
+        <div id="md_out" class="w3-card w3-white w3-padding markdown-body" style="margin-bottom:100px">
+        </div>
+        <div class="w3-card w3-theme-d3" style="position:fixed;left:21%;right:26%;bottom:0px;z-index:1;text-align:center">
+          <input type="checkbox" v-model="autoscroll" class="w3-bar-item w3-check"><label>AutoScroll</label>
+          <input type="number" v-model.number="slide" class="w3-bar-item w3-input" value="0" min="-1" style="display:initial;width:initial">
+          <button class="w3-bar-item w3-button" onclick="elementPrint('md_out')">Print</button>
+        </div>
       </div>
     </div>
 </div> <!-- End Vue Wrapper -->
@@ -53,48 +58,69 @@ const docapp = new Vue({
     doc: "",
     isIdle: true,
     autoscroll: false,
+    slide: 0,
+  },
+  // Computed data
+  computed: {
+    parsedDoc: function() { return md.parse(this.doc); }
   },
   {% if current_user.id == doc.user_id %}
   // Setup document updates
   created: function() {
     this.debouncedUpdateDoc = _.debounce(this.updateDoc, 500);
+    this.debouncedUpdateSlide = _.debounce(this.updateSlide, 500);
   },
+  {% endif %}
   // Event handlers
   methods: {
+    {% if current_user.id == doc.user_id %}
     updateDoc: function() {
       socket.emit('document', this.doc);
       this.isIdle = true;
-    }
-  },
-  {% endif %}
-  watch: {
-    doc: function() {
-      {% if current_user.id == doc.user_id %}
-      this.isIdle = false;
-      this.debouncedUpdateDoc();
-      {% endif %}
+    },
+    updateSlide: function() {
+      socket.emit('slide', this.slide);
+    },
+    {% endif %}
+    renderDoc: function() {
       if (this.autoscroll) {
         this.$nextTick(function() {
           const container = document.getElementById("main_content");
           window.scroll({top: container.scrollHeight, behavior: 'smooth'});
         });
       }
-      incrementalRender(md.parse(this.doc));
+      incrementalRender(this.parsedDoc, this.slide);
+    }
+  },
+  watch: {
+    doc: function() {
+      {% if current_user.id == doc.user_id %}
+      this.isIdle = false;
+      this.debouncedUpdateDoc();
+      {% endif %}
+      this.renderDoc();
+    },
+    slide: function() {
+      {% if current_user.id == doc.user_id %}
+      this.debouncedUpdateSlide();
+      {% endif %}
+      this.renderDoc();
     }
   },
 });
-
-// Basic autoscroll
-function toggleAutoScroll(el) {
-  el.classList.toggle("w3-red");
-  docapp.autoscroll = !docapp.autoscroll;
-}
 
 // Base sets up socket connection
 // Update entire document
 socket.on('document', function(content) {
   if (docapp.isIdle) {
     docapp.doc = content;
+  }
+});
+// Slide number change, separate from document update
+// to keep traffic size low
+socket.on('slide', function(slide) {
+  if (docapp.slide !== -1) {
+    docapp.slide = slide;
   }
 });
 </script>
