@@ -92,8 +92,8 @@ def handle_doc_update(content):
     emit('document', content, room=docid)
 
 @socketio.on('slide')
-def handle_doc_update(slide_num):
-  """Handle incoming chat messages."""
+def handle_slide_update(slide_num):
+  """Handle incoming slide updates."""
   docid = request.args.get('docid', type=int)
   emit('slide', slide_num, room=docid)
 

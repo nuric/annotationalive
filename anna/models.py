@@ -11,6 +11,7 @@ class User(db.Model):
   is_admin = db.Column(db.Boolean(), nullable=False, default=False)
   last_login = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
   joined = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
+  css = db.Column(db.Text(), nullable=False, default="")
 
   @property
   def password(self):
@@ -62,13 +63,11 @@ class Document(db.Model):
   updated = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
   created = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now)
 
-  @property
-  def is_empty(self):
-    """Is the order still open?"""
-    return not bool(self.content)
-
   def __len__(self):
     return len(self.content)
+
+  def __str__(self):
+    return self.content
 
 # Check for in memory database
 if app.config['SQLALCHEMY_DATABASE_URI'] == "sqlite://":
