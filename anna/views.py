@@ -97,6 +97,13 @@ def handle_slide_update(slide_num):
   docid = request.args.get('docid', type=int)
   emit('slide', slide_num, room=docid)
 
+@socketio.on('css')
+def handle_css_update(css):
+  """Handle incoming css updates."""
+  if current_user:
+    current_user.css = css
+    db.session.commit()
+
 def reset_account():
   """Reset current active account."""
   # Currently nothing happens, for future use

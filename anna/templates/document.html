@@ -105,6 +105,7 @@ const docapp = new Vue({
     {% endif %}
     updateCSS: function() {
       socket.emit('css', this.css);
+      chatapp.addMessage({ username: 'ME', msg: 'Custom CSS saved.'});
     },
     renderDoc: function() {
       if (this.autoscroll) {
@@ -149,10 +150,6 @@ socket.on('slide', function(slide) {
   if (docapp.slide !== -1 && slide !== -1) {
     docapp.slide = slide;
   }
-});
-// CSS updates to sync between user sessions
-socket.on('css', function(css) {
-  docapp.css = css
 });
 </script>
 {% endblock %}
