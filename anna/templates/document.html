@@ -27,7 +27,7 @@
 <div id="docapp"> <!-- Vue Wrapper for doc application -->
     <div class="w3-row-padding">
       <div id="md_source" class="w3-card w3-white w3-padding tab" style="display:none">
-        <textarea v-model="doc" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
+        <textarea v-model="content" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
       </div>
       <div id="md_container" class="w3-margin-top tab">
@@ -57,14 +57,14 @@ collapsables.push('document_bar');
 const docapp = new Vue({
   el: '#docapp',
   data: {
-    doc: "",
+    content: "",
     isIdle: true,
     autoscroll: false,
     slide: 0,
   },
   // Computed data
   computed: {
-    parsedDoc: function() { return md.parse(this.doc); }
+    parsedDoc: function() { return md.parse(this.content); }
   },
   {% if current_user.id == doc.user_id %}
   // Setup document updates
@@ -77,7 +77,7 @@ const docapp = new Vue({
   methods: {
     {% if current_user.id == doc.user_id %}
     updateDoc: function() {
-      socket.emit('document', this.doc);
+      socket.emit('document', this.content);
       this.isIdle = true;
     },
     updateSlide: function() {
@@ -95,7 +95,7 @@ const docapp = new Vue({
     }
   },
   watch: {
-    doc: function() {
+    content: function() {
       {% if current_user.id == doc.user_id %}
       this.isIdle = false;
       this.debouncedUpdateDoc();
@@ -115,7 +115,7 @@ const docapp = new Vue({
 // Update entire document
 socket.on('document', function(content) {
   if (docapp.isIdle) {
-    docapp.doc = content;
+    docapp.content = content;
   }
 });
 // Slide number change, separate from document update
