@@ -33,12 +33,12 @@
       <div id="md_container" class="w3-margin-top tab">
         <div id="md_out" class="w3-card w3-white w3-padding markdown-body" style="margin-bottom:100px">
         </div>
-        <div id="document_bar" class="w3-card w3-theme-d3" style="position:fixed;left:21%;right:26%;bottom:0px;z-index:1;text-align:center">
-          <input type="checkbox" v-model="autoscroll" class="w3-bar-item w3-check"><label>AutoScroll</label>
-          <input type="number" v-model.number="slide" class="w3-bar-item w3-input" value="0" min="-1" style="display:initial;width:initial">
-          <button class="w3-bar-item w3-button" onclick="elementPrint('md_out')">Print</button>
-        </div>
       </div>
+    </div>
+    <div id="document_bar" class="w3-card w3-theme-d3" style="position:fixed;left:21%;right:26%;bottom:0px;z-index:1;text-align:center">
+      <input type="checkbox" v-model="autoscroll" class="w3-bar-item w3-check"><label>AutoScroll</label>
+      <input type="number" v-model.number="slide" class="w3-bar-item w3-input" value="0" min="-1" style="display:initial;width:initial">
+      <button class="w3-bar-item w3-button" onclick="elementPrint('md_out')">Print</button>
     </div>
 </div> <!-- End Vue Wrapper -->
 {% endblock %}
