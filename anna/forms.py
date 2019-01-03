@@ -9,8 +9,8 @@ class UserPasswordForm(FlaskForm):
   # \w is [0-9a-zA-Z_]
   username = StringField('Username',
                          validators=[DataRequired(),
-                                     Regexp(r"^\w(\w| )*\w$",
-                                            message="At least 2 alphanumeric characters with only spaces in between.")
+                                     Regexp(r"^\w\w\w+$",
+                                            message="At least 3 alphanumeric characters.")
                                     ]
                          )
   password = PasswordField('Password', validators=[DataRequired(), Length(min=4)])
