@@ -74,30 +74,33 @@ function update_time() {
 }
 setInterval(update_time, 1000);
 // Sidebars
+var collapsables = ['main_content', 'main_content_bar'];
 function toggleSide(sidebar) {
-  main = document.getElementById("main_content");
-  mbar = document.getElementById("main_content_bar")
-  sideb = document.getElementById(sidebar);
+  const sideb = document.getElementById(sidebar);
+  const tocollapse = collapsables.map(x => document.getElementById(x));
+  var lr, percent;
   if (sidebar == "leftsidebar") {
+    lr = 'left';
     if (sideb.style.display == "none") {
-      main.style.left = "21%";
-      mbar.style.left = "21%";
+      percent = "21%";
       sideb.style.display = "block";
     } else {
-      main.style.left = "1%";
-      mbar.style.left = "1%";
+      percent = "1%";
       sideb.style.display = "none";
     }
   } else {
+    lr = 'right';
     if (sideb.style.display == "none") {
-      main.style.right = "26%";
-      mbar.style.right = "26%";
+      percent = "26%";
       sideb.style.display = "block";
     } else {
-      main.style.right = "1%";
-      mbar.style.right = "1%";
+      percent = "1%";
       sideb.style.display = "none";
     }
+  }
+  // Adjust side margins
+  for (c of tocollapse) {
+    c.style[lr] = percent;
   }
 }
 // Accordion
