@@ -9,3 +9,9 @@ SQLALCHEMY_DATABASE_URI = "sqlite://" # In memory database by default
 SQLALCHEMY_TRACK_MODIFICATIONS = False # Disable event system
 
 GOOGLE_ANALYTICS = "" # GA Code UA-###
+
+# Default document css
+DEFAULT_DOC_CSS = """.document {
+  margin-bottom: 200px;
+  background-color: white;
+}"""

@@ -8,6 +8,11 @@ function openTab(tabid) {
     document.getElementById(tabid).style.display = "block"; 
 }
 
+function toggleDisplay(elid) {
+  var el = document.getElementById(elid);
+  el.style.display = el.style.display == "none" ? "block" : "none";
+}
+
 // Print functionality
 // https://stackoverflow.com/questions/12997123/print-specific-part-of-webpage
 function elementPrint(id) {

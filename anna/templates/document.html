@@ -31,13 +31,19 @@
         </textarea>
       </div>
       <div id="md_container" class="w3-margin-top tab">
-        <div id="md_out" class="w3-card w3-white w3-padding markdown-body" style="margin-bottom:100px">
+        <textarea id="custom_css" v-model="css" style="width:100%;height:20vh;max-width:100%;margin-bottom:10px;display:none;">
+        </textarea>
+        <div id="md_out" class="w3-card w3-padding markdown-body document">
         </div>
+        {% raw %}
+        <v-style>{{ css }}</v-style>
+        {% endraw %}
       </div>
     </div>
     <div id="document_bar" class="w3-card w3-theme-d3" style="position:fixed;left:21%;right:26%;bottom:0px;z-index:1;text-align:center">
       <input type="checkbox" v-model="autoscroll" class="w3-bar-item w3-check"><label>AutoScroll</label>
       <input type="number" v-model.number="slide" class="w3-bar-item w3-input" value="0" min="-1" style="display:initial;width:initial">
+      <button class="w3-bar-item w3-button" onclick="toggleDisplay('custom_css')">CSS</button>
       <button class="w3-bar-item w3-button" onclick="elementPrint('md_out')">Print</button>
     </div>
 </div> <!-- End Vue Wrapper -->
@@ -61,18 +67,31 @@ const docapp = new Vue({
     isIdle: true,
     autoscroll: false,
     slide: 0,
+    css: `{{ current_user.css or config['DEFAULT_DOC_CSS'] }}`,
+  },
+  // Components workaround for custom css
+  // Vue does not allow rendering of side-effects
+  // we are going to wrap it around because
+  // we specifically want side-effects in this case
+  components: {
+    'v-style': {
+      render: function (createElement) {
+        return createElement('style', this.$slots.default);
+      }
+    },
   },
   // Computed data
   computed: {
     parsedDoc: function() { return md.parse(this.content); }
   },
-  {% if current_user.id == doc.user_id %}
   // Setup document updates
   created: function() {
+    {% if current_user.id == doc.user_id %}
     this.debouncedUpdateDoc = _.debounce(this.updateDoc, 500);
     this.debouncedUpdateSlide = _.debounce(this.updateSlide, 500);
+    {% endif %}
+    this.debouncedUpdateCSS = _.debounce(this.updateCSS, 500);
   },
-  {% endif %}
   // Event handlers
   methods: {
     {% if current_user.id == doc.user_id %}
@@ -84,6 +103,9 @@ const docapp = new Vue({
       socket.emit('slide', this.slide);
     },
     {% endif %}
+    updateCSS: function() {
+      socket.emit('css', this.css);
+    },
     renderDoc: function() {
       if (this.autoscroll) {
         this.$nextTick(function() {
@@ -107,6 +129,9 @@ const docapp = new Vue({
       this.debouncedUpdateSlide();
       {% endif %}
       this.renderDoc();
+    },
+    css: function() {
+      this.debouncedUpdateCSS();
     }
   },
 });
@@ -124,6 +149,10 @@ socket.on('slide', function(slide) {
   if (docapp.slide !== -1 && slide !== -1) {
     docapp.slide = slide;
   }
+});
+// CSS updates to sync between user sessions
+socket.on('css', function(css) {
+  docapp.css = css
 });
 </script>
 {% endblock %}
