@@ -119,7 +119,7 @@ socket.on('document', function(content) {
 // Slide number change, separate from document update
 // to keep traffic size low
 socket.on('slide', function(slide) {
-  if (docapp.slide !== -1) {
+  if (docapp.slide !== -1 && slide !== -1) {
     docapp.slide = slide;
   }
 });
