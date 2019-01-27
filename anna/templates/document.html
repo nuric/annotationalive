@@ -55,10 +55,12 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.js" integrity="sha256-q01RVaHUJiYq9aq0FwkI6GAmMtOmRgToK8aEHHm4Xl8=" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/incrementaldom/0.5.1/incremental-dom-min.js"></script>
+<script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
 <script src="{{ url_for('static', filename='document.js') }}"></script>
 <script>
 // Set document_bar as collapsable
 collapsables.push('document_bar');
+
 // Setup Vue dynamic components
 const docapp = new Vue({
   el: '#docapp',
@@ -110,8 +112,11 @@ const docapp = new Vue({
     renderDoc: function() {
       if (this.autoscroll) {
         this.$nextTick(function() {
-          const container = document.getElementById("main_content");
-          window.scroll({top: container.scrollHeight, behavior: 'smooth'});
+          // Ensure images are loaded before scrolling
+          imagesLoaded('#md_out img', function() {
+            const container = document.getElementById("main_content");
+            window.scroll({top: container.scrollHeight, behavior: 'smooth'});
+          });
         });
       }
       incrementalRender(this.parsedDoc, this.slide);

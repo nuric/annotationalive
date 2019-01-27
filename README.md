@@ -27,7 +27,7 @@ Key things to consider before and after running:
 
 ## Limitations
 The app is designed to be minimal and doesn't come with some, perhaps expected, features:
- - It assumes there only one editor. The entire document is sent as the update not incremental changes.
+ - It assumes there only one editor. The entire document is sent as the update not incremental changes, but changes are rendered incrementally.
  - There is no full CRUD on documents or user accounts. No password change, no document delete etc. But there is structure such as account reset left as a starting point.
  - Chat is ephemeral, it doesn't store a history so on a page refresh it will start clean and only render newly received messages.
 
@@ -49,3 +49,4 @@ Bug fixes and small improvements following the existing design principle are wel
  - [markdown-it](https://github.com/markdown-it/markdown-it) - markdown renderer
  - [highlight.js](https://highlightjs.org/) - syntax highlighter
  - [katex](https://katex.org/) - math renderer
+ - [imagesLoaded](https://github.com/desandro/imagesloaded) - image load checker for autoscroll
