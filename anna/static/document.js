@@ -124,7 +124,7 @@ function renderHTML(content) {
 // Render token tag with content
 function renderInline(tokens, idx) {
   var args = tokens[idx].attrs ? tokens[idx].attrs.flat() : [];
-  IncrementalDOM.elementOpen(tokens[idx].tag, idx, null, ...args);
+  IncrementalDOM.elementOpen(tokens[idx].tag, null, null, ...args);
   IncrementalDOM.text(tokens[idx].content);
   IncrementalDOM.elementClose(tokens[idx].tag);
 }
@@ -143,7 +143,7 @@ const rules = {
   },
   fence: function(tokens, idx) {
     IncrementalDOM.elementOpen('pre');
-    IncrementalDOM.elementOpen('code', idx);
+    IncrementalDOM.elementOpen('code');
     var lang = tokens[idx].info ? tokens[idx].info.trim() : '';
     var content = md.options.highlight(tokens[idx].content, lang.split(/\s+/g)[0]); 
     if (content) { renderHTML(content); }
@@ -161,13 +161,13 @@ function renderToken(tokens, idx) {
   var args = tokens[idx].attrs ? tokens[idx].attrs.flat() : [];
   switch (tokens[idx].nesting) {
     case 1:
-      IncrementalDOM.elementOpen(tokens[idx].tag, idx, null, ...args);
+      IncrementalDOM.elementOpen(tokens[idx].tag, null, null, ...args);
       break;
     case -1:
       IncrementalDOM.elementClose(tokens[idx].tag);
       break;
     default:
-      IncrementalDOM.elementVoid(tokens[idx].tag, idx, null, ...args);
+      IncrementalDOM.elementVoid(tokens[idx].tag, null, null, ...args);
   }
 }
 
