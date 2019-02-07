@@ -176,28 +176,35 @@ function incDOMRender(data) {
   var i, token, count;
   const tokens = data.tokens,
         slide = data.slide || 0,
+        depth = data.depth || 0,
         len = tokens.length;
 
+  if (depth == 0) { IncrementalDOM.elementOpen('div', null, ['class', 'slide']); }
   for (i = 0, count = 0; i < len; i++) {
     token = tokens[i];
     // Check slide number
     if (token.type === 'hr') {
       count++;
+      if (depth == 0) {
+        IncrementalDOM.elementClose('div');
+        IncrementalDOM.elementOpen('div', null, ['class', 'slide']);
+      }
       if (slide > 0 && count == slide) { break; }
     }
     // Render tokens as usual
     if (token.type === 'inline') {
-       incDOMRender({tokens: token.children});
+       incDOMRender({tokens: token.children, depth: depth+1});
     } else if (typeof rules[token.type] !== 'undefined') {
       rules[token.type](tokens, i);
     } else {
       renderToken(tokens, i);
     }
   }
+  if (depth == 0) { IncrementalDOM.elementClose('div'); }
 }
 
 // Render and patch based on IncrementalDOM
 function incrementalRender(tokens, slide=0) {
   var md_out = document.getElementById('md_out');
-  IncrementalDOM.patch(md_out, incDOMRender, {tokens: tokens, slide: slide});
+  IncrementalDOM.patch(md_out, incDOMRender, {tokens: tokens, slide: slide, depth: 0});
 }
