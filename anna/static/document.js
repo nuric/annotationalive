@@ -32,6 +32,85 @@ function elementPrint(id) {
   //WinPrint.close();
 }
 
+// Speech to Text
+if ('webkitSpeechRecognition' in window) {
+  const btn_voice_id = 'btn_voice';
+  const textarea_id = 'md_textarea';
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true; // causes lag at the end
+  let recognizing = false,
+      ignore_onend = false,
+      leftText = "",
+      rightText = "",
+      final_transcript = "";
+
+  recognition.onstart = function() {
+    recognizing = true;
+    document.getElementById(btn_voice_id).classList.add("w3-red");
+    console.log('stt_speak_now');
+  };
+
+  recognition.onerror = function(event) {
+    if (event.error == 'no-speech') {
+      console.log('stt_no_speech');
+    }
+    if (event.error == 'audio-capture') {
+      console.log('stt_no_microphone');
+    }
+    if (event.error == 'not-allowed') {
+      console.log('stt_not_allowed');
+    }
+    ignore_onend = true;
+  };
+
+  recognition.onend = function() {
+    recognizing = false;
+    document.getElementById(btn_voice_id).classList.remove("w3-red");
+    var tarea = document.getElementById(textarea_id);
+    tarea.selectionStart = tarea.selectionEnd = leftText.length + final_transcript.length;
+    tarea.focus();
+    if (ignore_onend) {
+      return;
+    }
+    console.log("stt_end");
+  };
+
+  recognition.onresult = function(event) {
+    var interim_transcript = '';
+    if (typeof(event.results) == 'undefined') {
+      recognition.onend = null;
+      recognition.stop();
+      return;
+    }
+    for (var i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        final_transcript += event.results[i][0].transcript;
+      } else {
+        interim_transcript += event.results[i][0].transcript;
+      }
+    }
+    final_transcript = final_transcript.replace(/\S/, c => c.toUpperCase())
+    if (final_transcript || interim_transcript) {
+      docapp.content = leftText + final_transcript + interim_transcript + rightText;
+    }
+  };
+
+  function toggleSTT() {
+    if (recognizing) {
+      recognition.stop();
+      return;
+    }
+    // Clear old recognition and start listening
+    var tarea = document.getElementById(textarea_id);
+    leftText = tarea.value.substring(0, tarea.selectionStart);
+    rightText = tarea.value.substring(tarea.selectionEnd, tarea.value.length);
+    final_transcript = "";
+    recognition.lang = "en-GB";
+    recognition.start();
+  }
+} // End of if ('webkitSpeechRecognition' in window) {
+
 // Markdown renderer
 const md = markdownit({
   // Syntax highligthing
