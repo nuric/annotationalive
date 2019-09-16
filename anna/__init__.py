@@ -1,4 +1,4 @@
-"""pedlarweb entry point."""
+"""anna flask app package."""
 from flask import Flask
 
 # pylint: disable=wrong-import-position,cyclic-import

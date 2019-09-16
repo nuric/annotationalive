@@ -15,9 +15,7 @@ pip3 install --no-cache-dir --upgrade -r requirements.txt
 After the packages are installed, it can be run with the following commands:
 
 ```bash
-export FLASK_APP=anna
-export FLASK_ENV=production # or development
-flask run
+python3 run.py
 # Visit localhost:5000
 ```
 Key things to consider before and after running:
