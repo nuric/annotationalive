@@ -64,8 +64,13 @@ if ('webkitSpeechRecognition' in window) {
   };
 
   recognition.onend = function() {
-    recognising = false;
-    console.log("stt_end");
+    if (listeners.size > 0) {
+      recognition.start();
+      console.log("stt_restart");
+    } else {
+      recognising = false;
+      console.log("stt_end");
+    }
   };
 
   recognition.onresult = function(event) {
