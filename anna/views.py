@@ -104,6 +104,14 @@ def handle_css_update(css):
     current_user.css = css
     db.session.commit()
 
+@socketio.on('caption')
+def handle_caption_update(caption):
+  """Handle incoming caption updates."""
+  docid = request.args.get('docid', type=int)
+  doc = Document.query.get_or_404(docid)
+  if current_user and current_user.id == doc.user_id:
+    emit('caption', caption, room=docid)
+
 def reset_account():
   """Reset current active account."""
   # Currently nothing happens, for future use
