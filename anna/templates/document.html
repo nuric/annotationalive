@@ -30,7 +30,7 @@
         <textarea id="md_textarea" v-model="content" style="width:100%;height:80vh;max-width:100%" {% if current_user.id != doc.user_id %}readonly{% endif %}>
         </textarea>
         {% if current_user.id == doc.user_id %}
-        <button id="btn_voice" class="w3-btn w3-block" onclick="toggleSTT();">Voice</button>
+        <button id="btn_voice" class="w3-btn w3-block" onclick="toggleSTT(transcribe);">Voice</button>
         {% endif %}
       </div>
       <div id="md_container" class="w3-margin-top tab">
@@ -43,9 +43,15 @@
         {% endraw %}
       </div>
     </div>
+    <div v-if="livecaption" id="caption_bar" class="" style="position:fixed;left:21%;right:26%;bottom:40px;z-index:1;text-align:center">
+      {% raw %}
+      <p>{{ lastcaption }}<p>
+      {% endraw %}
+    </div>
     <div id="document_bar" class="w3-card w3-theme-d3" style="position:fixed;left:21%;right:26%;bottom:0px;z-index:1;text-align:center">
-      <input type="checkbox" v-model="autoscroll" class="w3-bar-item w3-check"><label>AutoScroll</label>
-      <input type="number" v-model.number="slide" class="w3-bar-item w3-input" value="0" min="-1" style="display:initial;width:initial">
+      <input type="checkbox" v-model="livecaption" class="w3-bar-item w3-check"><label>Live Caption</label>
+      <input type="checkbox" v-model="autoscroll" class="w3-bar-item w3-check"><label>Scroll</label>
+      <input type="number" v-model.number="slide" class="w3-bar-item w3-input" value="0" min="-1" style="display:initial;width:4em">
       <button class="w3-bar-item w3-button" onclick="toggleDisplay('custom_css')">CSS</button>
       <button class="w3-bar-item w3-button" onclick="elementPrint('md_out')">Print</button>
     </div>
@@ -61,7 +67,8 @@
 <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
 <script src="{{ url_for('static', filename='document.js') }}"></script>
 <script>
-// Set document_bar as collapsable
+// Set caption_bar and document_bar as collapsable
+collapsables.push('caption_bar');
 collapsables.push('document_bar');
 
 // Setup Vue dynamic components
@@ -70,6 +77,8 @@ const docapp = new Vue({
   data: {
     content: "",
     isIdle: true,
+    livecaption: true,
+    lastcaption: "caption caption caption caption caption caption caption caption caption caption caption caption caption caption caption",
     autoscroll: false,
     slide: 0,
     css: `{{ current_user.css or config['DEFAULT_DOC_CSS'] }}`,

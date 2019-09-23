@@ -38,16 +38,15 @@ if ('webkitSpeechRecognition' in window) {
   const textarea_id = 'md_textarea';
   const recognition = new webkitSpeechRecognition();
   recognition.continuous = true;
+  recognition.lang = "en-GB";
   recognition.interimResults = true; // causes lag at the end
-  let recognizing = false,
+  let recognising = false,
       ignore_onend = false,
-      leftText = "",
-      rightText = "",
+      listeners = new Set(),
       final_transcript = "";
 
   recognition.onstart = function() {
-    recognizing = true;
-    document.getElementById(btn_voice_id).classList.add("w3-red");
+    recognising = true;
     console.log('stt_speak_now');
   };
 
@@ -65,14 +64,7 @@ if ('webkitSpeechRecognition' in window) {
   };
 
   recognition.onend = function() {
-    recognizing = false;
-    document.getElementById(btn_voice_id).classList.remove("w3-red");
-    var tarea = document.getElementById(textarea_id);
-    tarea.selectionStart = tarea.selectionEnd = leftText.length + final_transcript.length;
-    tarea.focus();
-    if (ignore_onend) {
-      return;
-    }
+    recognising = false;
     console.log("stt_end");
   };
 
@@ -90,25 +82,55 @@ if ('webkitSpeechRecognition' in window) {
         interim_transcript += event.results[i][0].transcript;
       }
     }
-    final_transcript = final_transcript.replace(/\S/, c => c.toUpperCase())
-    if (final_transcript || interim_transcript) {
-      docapp.content = leftText + final_transcript + interim_transcript + rightText;
-    }
+    final_transcript = final_transcript.replace(/\S/, c => c.toUpperCase());
+    let script = final_transcript + interim_transcript;
+    listeners.forEach(l => l.onresult(script));
   };
 
-  function toggleSTT() {
-    if (recognizing) {
-      recognition.stop();
-      return;
+  function toggleSTT(listener) {
+    // If not in the set
+    if (listeners.delete(listener)) {
+      listener.onend();
+    } else {
+      listeners.add(listener);
+      listener.onstart();
     }
-    // Clear old recognition and start listening
-    var tarea = document.getElementById(textarea_id);
-    leftText = tarea.value.substring(0, tarea.selectionStart);
-    rightText = tarea.value.substring(tarea.selectionEnd, tarea.value.length);
-    final_transcript = "";
-    recognition.lang = "en-GB";
-    recognition.start();
+    // Update recognition
+    if (listeners.size > 0 && !recognising) {
+      recognition.start();
+    } else if (listeners.size == 0 && recognising) {
+      final_transcript = "";
+      recognition.stop();
+    }
   }
+
+  // --- Transcription ---
+  var transcribe = function() {
+    const btn_voice_id = 'btn_voice';
+    const textarea_id = 'md_textarea';
+
+    let leftText = "",
+        rightText = "",
+        lastStart = 0;
+    return {
+      onstart: function() {
+        document.getElementById(btn_voice_id).classList.add("w3-red");
+        var tarea = document.getElementById(textarea_id);
+        leftText = tarea.value.slice(0, tarea.selectionStart);
+        rightText = tarea.value.slice(tarea.selectionEnd, tarea.value.length);
+        lastStart = final_transcript.length;
+      },
+      onend: function() {
+        document.getElementById(btn_voice_id).classList.remove("w3-red");
+        var tarea = document.getElementById(textarea_id);
+        tarea.selectionStart = tarea.selectionEnd = leftText.length + final_transcript.length;
+        tarea.focus();
+      },
+      onresult: function(script) {
+        docapp.content = leftText + script.slice(lastStart) + rightText;
+      }
+    };
+  }();
 } // End of if ('webkitSpeechRecognition' in window) {
 
 // Markdown renderer
