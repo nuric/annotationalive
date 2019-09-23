@@ -131,6 +131,20 @@ if ('webkitSpeechRecognition' in window) {
       }
     };
   }();
+
+  // --- Live Caption ---
+  var live_cap = function() {
+    return {
+      onstart: function() {
+      },
+      onend: function() {
+      },
+      onresult: function(script) {
+        let words = script.split(" ");
+        docapp.lastcaption = words.slice(-15).join(" ");
+      }
+    };
+  }();
 } // End of if ('webkitSpeechRecognition' in window) {
 
 // Markdown renderer

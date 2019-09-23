@@ -77,8 +77,8 @@ const docapp = new Vue({
   data: {
     content: "",
     isIdle: true,
-    livecaption: true,
-    lastcaption: "caption caption caption caption caption caption caption caption caption caption caption caption caption caption caption",
+    livecaption: false,
+    lastcaption: "",
     autoscroll: false,
     slide: 0,
     css: `{{ current_user.css or config['DEFAULT_DOC_CSS'] }}`,
@@ -103,6 +103,7 @@ const docapp = new Vue({
     {% if current_user.id == doc.user_id %}
     this.debouncedUpdateDoc = _.debounce(this.updateDoc, 500);
     this.debouncedUpdateSlide = _.debounce(this.updateSlide, 500);
+    this.debouncedUpdateCaption = _.debounce(this.updateCaption, 500);
     {% endif %}
     this.debouncedUpdateCSS = _.debounce(this.updateCSS, 500);
   },
@@ -115,6 +116,9 @@ const docapp = new Vue({
     },
     updateSlide: function() {
       socket.emit('slide', this.slide);
+    },
+    updateCaption: function() {
+      socket.emit('caption', this.lastcaption);
     },
     {% endif %}
     updateCSS: function() {
@@ -150,7 +154,15 @@ const docapp = new Vue({
     },
     css: function() {
       this.debouncedUpdateCSS();
+    },
+    {% if current_user.id == doc.user_id %}
+    livecaption: function() {
+      toggleSTT(live_cap);
+    },
+    lastcaption: function() {
+      this.debouncedUpdateCaption();
     }
+    {% endif %}
   },
 });
 
@@ -168,5 +180,10 @@ socket.on('slide', function(slide) {
     docapp.slide = slide;
   }
 });
+{% if current_user.id != doc.user_id %}
+socket.on('caption', function(caption) {
+  docapp.lastcaption = caption;
+});
+{% endif %}
 </script>
 {% endblock %}
